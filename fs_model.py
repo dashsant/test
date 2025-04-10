@@ -1,4 +1,6 @@
 import numpy as np
+from models.arcface_models import ResNet
+import torch.serialization
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,6 +8,8 @@ import os
 from torch.autograd import Variable
 from .base_model import BaseModel
 from . import networks
+
+torch.serialization.add_safe_globals({'ResNet': ResNet})
 
 class SpecificNorm(nn.Module):
     def __init__(self, epsilon=1e-8):
@@ -59,9 +63,10 @@ class fsModel(BaseModel):
         self.netG = Generator_Adain_Upsample(input_nc=3, output_nc=3, latent_size=512, n_blocks=9, deep=False)
         self.netG.to(device)
 
+
         # Id network
         netArc_checkpoint = opt.Arc_path
-        netArc_checkpoint = torch.load(netArc_checkpoint, map_location=torch.device("cpu"), weights_only=False)
+        netArc_checkpoint = torch.load(netArc_checkpoint, map_location=torch.device("cpu"))
         self.netArc = netArc_checkpoint
         self.netArc = self.netArc.to(device)
         self.netArc.eval()
